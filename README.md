@@ -39,7 +39,7 @@
 
 ```bash
 cd /opt/astrbot/data/plugins
-git clone https://github.com/miRaCleZ-cr/astrbot_plugin_dafeiyu_panel
+git clone https://github.com/ChenZRui/astrbot_plugin_dafeiyu_panel
 systemctl restart qqbot-astrbot        # 或者面板里点「重载插件」
 ```
 

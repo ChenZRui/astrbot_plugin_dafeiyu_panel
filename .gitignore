@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 data/*.json.bak*
 data/ratings.json
+
+推送.bat
