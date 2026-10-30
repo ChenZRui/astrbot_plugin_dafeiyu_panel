@@ -1,0 +1,7 @@
+_fixture/
+_preview.log
+_pull.sh
+__pycache__/
+*.pyc
+data/*.json.bak*
+data/ratings.json

@@ -1,0 +1,56 @@
+{
+  "enable": {
+    "type": "bool",
+    "description": "启用面板",
+    "default": true,
+    "hint": "关掉后两个视图仍可见，但接口会返回未启用提示。"
+  },
+  "bili_state_file": {
+    "type": "string",
+    "description": "刷B站插件的数据文件",
+    "default": "",
+    "hint": "留空自动找 data/bili_whale/state.json（astrbot_plugin_bili_whale 插件的数据）。"
+  },
+  "cover_dir": {
+    "type": "string",
+    "description": "封面图目录",
+    "default": "",
+    "hint": "留空自动找 data/bili_whale/covers/。没有封面时会显示占位。"
+  },
+  "journal_file": {
+    "type": "string",
+    "description": "日记数据文件",
+    "default": "",
+    "hint": "留空自动找 data/whale_journal/entries.jsonl（astrbot_plugin_whale_journal 插件的数据）。"
+  },
+  "page_size": {
+    "type": "int",
+    "description": "打分台每页条数",
+    "default": 24,
+    "hint": "手机上一次别放太多，20~30 比较顺。"
+  },
+  "allow_edit": {
+    "type": "bool",
+    "description": "允许在面板里打分/收藏/写评价",
+    "default": true,
+    "hint": "关掉就变成只读面板。"
+  },
+  "sync_to_bili_state": {
+    "type": "bool",
+    "description": "打分同步进刷B站插件的 state.json",
+    "default": true,
+    "hint": "开着的话，你的星星和评价会写进 data/bili_whale/state.json 的 feedback，她下一轮选题就按这个调权重。写之前会先备份。"
+  },
+  "show_score": {
+    "type": "bool",
+    "description": "显示她自己给的分数和主题",
+    "default": true,
+    "hint": "就是卡片上「她给 N 分」「#主题」那些小标签。"
+  },
+  "journal_limit": {
+    "type": "int",
+    "description": "日记本最多显示多少篇",
+    "default": 300,
+    "hint": "按时间倒序取最近的这么多篇。"
+  }
+}
