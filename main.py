@@ -27,6 +27,8 @@ class DafeiyuPanel(Star):
             (f"/{PLUGIN_NAME}/cover", self.api_cover, ["GET"], "单张封面（base64）"),
             (f"/{PLUGIN_NAME}/rate", self.api_rate, ["POST"], "打分/写评价/收藏"),
             (f"/{PLUGIN_NAME}/journal", self.api_journal, ["GET"], "日记列表"),
+            (f"/{PLUGIN_NAME}/profile", self.api_profile, ["GET"], "主人画像（性格/习惯/口头禅/心情/睡眠）"),
+            (f"/{PLUGIN_NAME}/lessons", self.api_lessons, ["GET"], "主人教我的（黑话/梗/调情）"),
             (f"/{PLUGIN_NAME}/status", self.api_status, ["GET"], "数据源状态"),
         ]
         for route, handler, methods, desc in routes:
@@ -134,6 +136,27 @@ class DafeiyuPanel(Star):
             }
         )
 
+    async def api_profile(self):
+        """GET profile —— 主人画像（由日记插件按对话总结）。"""
+        if not self._enabled():
+            return error_response("面板未启用", status_code=403)
+        data = self.data.profile()
+        data["status"] = self.data.status()
+        return json_response(data)
+
+    async def api_lessons(self):
+        """GET lessons?q= —— 主人教我的（黑话/梗/调情/其他）。"""
+        if not self._enabled():
+            return error_response("面板未启用", status_code=403)
+        q = request.query.get("q") or ""
+        try:
+            limit = int(request.query.get("limit", 0, type=int) or 0)
+        except Exception:
+            limit = 0
+        payload = self.data.lessons(q=q, limit=limit or int(self.conf.get("lessons_limit", 400) or 400))
+        payload["status"] = self.data.status()
+        return json_response(payload)
+
     async def api_status(self):
         return json_response(
             {
@@ -150,6 +173,6 @@ class DafeiyuPanel(Star):
         """看看面板在哪打开。"""
         yield event.plain_result(
             "面板地址：AstrBot 网页 → 插件 → 大肥鱼面板 → 打开视图\n"
-            "里面有两个：『她看过什么』打分台、『她的日记本』。\n"
+            "里面四个：『她看过什么』打分台、『她的日记本』、『主人画像』、『主人教我的』。\n"
             "手机也是同一个地址，用手机浏览器打开面板就行。"
         )

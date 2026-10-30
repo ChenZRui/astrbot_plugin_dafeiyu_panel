@@ -110,6 +110,14 @@ def main() -> None:
                     )
                 if name == "status":
                     return self._json({"summary": data.summary(), "sources": data.status()})
+                if name == "profile":
+                    payload = data.profile()
+                    payload["status"] = data.status()
+                    return self._json(payload)
+                if name == "lessons":
+                    payload = data.lessons(q=q.get("q", ""), limit=int(q.get("limit", 400)))
+                    payload["status"] = data.status()
+                    return self._json(payload)
                 return self._json({"message": "not found"}, 404)
 
             rel = path.lstrip("/") or "她看过什么/index.html"

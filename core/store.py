@@ -333,6 +333,94 @@ class PanelData:
         out.sort(key=lambda x: x["ts"], reverse=True)
         return out[: max(1, int(limit or 300))]
 
+    # ------------------------------------------------------------ 主人画像
+    def profile(self) -> dict:
+        """读日记插件算出来的主人画像（owner_profile.json）。"""
+        path = self.journal_file.parent / "owner_profile.json"
+        data = _read_json(path, {})
+        if not isinstance(data, dict):
+            data = {}
+        mood = data.get("mood") if isinstance(data.get("mood"), dict) else {}
+        sleep = data.get("sleep") if isinstance(data.get("sleep"), dict) else {}
+
+        def _list(key: str) -> list[str]:
+            v = data.get(key) or []
+            if isinstance(v, str):
+                v = [x for x in v.replace("，", ",").split(",") if x.strip()]
+            return [str(x).strip() for x in v if str(x).strip()][:16]
+
+        try:
+            idx = int(mood.get("index") or 0)
+        except Exception:
+            idx = 0
+        return {
+            "has_data": bool(data),
+            "updated_at": str(data.get("updated_at") or ""),
+            "days_covered": int(data.get("days_covered") or 0),
+            "personality": _list("personality"),
+            "habits": _list("habits"),
+            "catchphrases": _list("catchphrases"),
+            "highlights": _list("highlights"),
+            "summary": str(data.get("summary") or ""),
+            "mood": {
+                "index": max(0, min(10, idx)),
+                "label": str(mood.get("label") or "—"),
+                "note": str(mood.get("note") or ""),
+            },
+            "sleep": {
+                "quality": str(sleep.get("quality") or "—"),
+                "note": str(sleep.get("note") or ""),
+            },
+            "file": str(path),
+        }
+
+    # ------------------------------------------------------------ 教我的
+    def lessons(self, *, q: str = "", limit: int = 400) -> dict:
+        """读日记插件的教学库（lessons.json），按四类分组。"""
+        path = self.journal_file.parent / "lessons.json"
+        data = _read_json(path, {})
+        items = data.get("items") if isinstance(data, dict) else []
+        if not isinstance(items, list):
+            items = []
+        q = (q or "").strip().lower()
+        cats = ("黑话", "梗", "调情", "其他")
+        groups: dict[str, list[dict]] = {c: [] for c in cats}
+        total = 0
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            text = str(it.get("text") or "").strip()
+            if not text:
+                continue
+            cat = str(it.get("category") or "其他")
+            if cat not in groups:
+                cat = "其他"
+            if q and q not in text.lower() and q not in cat:
+                continue
+            groups[cat].append(
+                {
+                    "id": str(it.get("id") or ""),
+                    "text": text[:200],
+                    "category": cat,
+                    "note": str(it.get("note") or ""),
+                    "source": str(it.get("source") or ""),
+                    "day": str(it.get("day") or ""),
+                    "hits": int(it.get("hits") or 1),
+                    "ts": float(it.get("ts") or 0),
+                }
+            )
+            total += 1
+        for c in cats:
+            groups[c].sort(key=lambda x: x["ts"], reverse=True)
+            groups[c] = groups[c][: max(1, int(limit or 400))]
+        return {
+            "total": total,
+            "counts": {c: len(groups[c]) for c in cats},
+            "groups": [{"category": c, "items": groups[c]} for c in cats],
+            "updated_at": str(data.get("updated_at") or "") if isinstance(data, dict) else "",
+            "file": str(path),
+        }
+
     # ------------------------------------------------------------ 状态
     def status(self) -> dict:
         return {
@@ -343,4 +431,8 @@ class PanelData:
             "journal_file": str(self.journal_file),
             "journal_exists": self.journal_file.is_file(),
             "ratings_file": str(self.ratings_file),
+            "profile_file": str(self.journal_file.parent / "owner_profile.json"),
+            "profile_exists": (self.journal_file.parent / "owner_profile.json").is_file(),
+            "lessons_file": str(self.journal_file.parent / "lessons.json"),
+            "lessons_exists": (self.journal_file.parent / "lessons.json").is_file(),
         }

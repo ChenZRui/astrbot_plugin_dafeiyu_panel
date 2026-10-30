@@ -50,7 +50,7 @@
 
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
           display: flex; flex-direction: column; }
-  .cvbox { position: relative; aspect-ratio: 16 / 10; background: #0d1526; }
+  .cvbox { position: relative; aspect-ratio: 16 / 10; background: var(--card2); }
   .cvbox img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .cvbox .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
                color: #4d5b76; font-size: 13px; text-align: center; padding: 0 18px; line-height: 1.5; }
@@ -113,13 +113,51 @@
     .grid { grid-template-columns: 1fr; }
     .kpi b { font-size: 19px; }
   }
+
+  /* ------------------------------------------------ 皮肤（右上角切换） */
+  .skins { position: fixed; right: 14px; top: 12px; z-index: 99; display: flex; gap: 6px;
+           background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 6px; }
+  .skins button { border: 1px solid transparent; background: transparent; color: var(--dim);
+                  font-size: 12px; padding: 3px 9px; border-radius: 999px; cursor: pointer; }
+  .skins button.on { color: var(--bg); background: var(--txt); font-weight: 700; }
+  @media (max-width: 560px) { .skins { position: static; margin: 0 0 10px; justify-content: flex-end; } }
+
+  html[data-skin="paper"] {
+    --bg: #f6f4ef; --card: #ffffff; --card2: #f1ede6; --line: #e5ded1;
+    --txt: #2b2620; --dim: #8b8175; --acc: #2f9e83; --acc2: #4b6bff; --warn: #c9762f;
+    --paper: #f6f4ef; --accent: #2f9e83; --warnbg: #fdf3d8; --warnbd: #efdfae;
+  }
+  html[data-skin="sakura"] {
+    --bg: #fff5f7; --card: #ffffff; --card2: #ffeef2; --line: #ffd9e2;
+    --txt: #3a2430; --dim: #9c7f8b; --acc: #ff7aa2; --acc2: #b06bff; --warn: #e08b00;
+    --paper: #fff5f7; --accent: #e0567f; --warnbg: #fde9ef; --warnbd: #f2c9d7;
+  }
+  html[data-skin="forest"] {
+    --bg: #0f1a14; --card: #16241b; --card2: #12201a; --line: #24402f;
+    --txt: #e6f2e9; --dim: #8fae99; --acc: #7fdc9a; --acc2: #57c7d4; --warn: #ffcc66;
+    --paper: #0f1a14; --accent: #7fdc9a; --warnbg: #1d2f22; --warnbd: #35553d;
+  }
+  html[data-skin="ocean"] {
+    --bg: #0b0f19; --card: #111827; --card2: #0f172a; --line: #1f2b45;
+    --txt: #e8eefc; --dim: #8b9ab5; --acc: #5ee1c1; --acc2: #7aa2ff; --warn: #ffcc66;
+    --paper: #eef4f9; --accent: #2f7fb0; --warnbg: #eaf4fb; --warnbd: #c6e0f0;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="pnav">
+  <div class="skins" id="skins">
+    <button data-skin="ocean">深海</button>
+    <button data-skin="paper">纸感</button>
+    <button data-skin="sakura">樱花</button>
+    <button data-skin="forest">森林</button>
+  </div>
+
+    <nav class="pnav">
     <a href="#" class="on" data-nav="watch">她看过什么</a>
-    <a href="#" data-nav="journal">她的日记本</a>
+    <a href="../她的日记本/index.html" data-nav="journal">她的日记本</a>
+    <a href="../主人画像/index.html" data-nav="profile">主人画像</a>
+    <a href="../主人教我的/index.html" data-nav="lessons">主人教我的</a>
   </nav>
 
   <h1>她看过<i>什么</i></h1>
@@ -363,6 +401,22 @@ document.querySelectorAll('nav.pnav a').forEach((a) => {
 });
 
 load(true);
+</script>
+
+<script>
+(function () {
+  var KEY = "dafeiyu-skin";
+  var btns = document.querySelectorAll("#skins button");
+  function apply(name) {
+    document.documentElement.setAttribute("data-skin", name);
+    btns.forEach(function (b) { b.classList.toggle("on", b.dataset.skin === name); });
+    try { localStorage.setItem(KEY, name); } catch (e) {}
+  }
+  var saved = "ocean";
+  try { saved = localStorage.getItem(KEY) || "ocean"; } catch (e) {}
+  btns.forEach(function (b) { b.addEventListener("click", function () { apply(b.dataset.skin); }); });
+  apply(saved);
+})();
 </script>
 </body>
 </html>

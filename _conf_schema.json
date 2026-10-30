@@ -52,5 +52,11 @@
     "description": "日记本最多显示多少篇",
     "default": 300,
     "hint": "按时间倒序取最近的这么多篇。"
+  },
+  "lessons_limit": {
+    "type": "int",
+    "default": 400,
+    "description": "「主人教我的」最多展示多少条",
+    "hint": "默认 400"
   }
 }

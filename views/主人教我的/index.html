@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN" data-skin="paper">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>主人教我的 · 大肥鱼面板</title>
+<style>
+  :root {
+    --paper: #faf7f2; --card: #fffdfa; --line: #e8e0d4; --txt: #2b2620; --dim: #8b8175;
+    --accent: #c9762f; --warnbg: #fdf3d8; --warnbd: #efdfae;
+    --bg: #faf7f2; --card2: #f6f1e8; --acc: #c9762f; --acc2: #7aa2ff; --warn: #c9762f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--txt); }
+  body { font: 15px/1.75 "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+         padding: 18px 18px 46px; overflow-x: hidden; }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  nav.pnav { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  nav.pnav a { color: var(--dim); text-decoration: none; font-size: 13px; border: 1px solid var(--line);
+               background: var(--card); padding: 5px 12px; border-radius: 999px; }
+  nav.pnav a.on { color: var(--bg); background: var(--txt); border-color: var(--txt); font-weight: 700; }
+  h1 { font-size: 26px; margin: 6px 0 4px; }
+  h1 i { color: var(--accent); font-style: normal; }
+  .sub { color: var(--dim); font-size: 13.5px; margin-bottom: 16px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .kpi b { display: block; font-size: 22px; line-height: 1.2; }
+  .kpi span { color: var(--dim); font-size: 12.5px; }
+
+  .bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .search { flex: 1 1 240px; min-width: 180px; background: var(--card); border: 1px solid var(--line);
+            border-radius: 12px; padding: 11px 14px; color: var(--txt); font-size: 14px; outline: none; }
+  .search:focus { border-color: var(--accent); }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tabs button { background: var(--card); border: 1px solid var(--line); color: var(--dim);
+                 border-radius: 999px; padding: 7px 14px; font-size: 13px; cursor: pointer; }
+  .tabs button.on { color: var(--bg); background: var(--txt); border-color: var(--txt); font-weight: 700; }
+
+  .group { margin-bottom: 18px; }
+  .group h2 { font-size: 15px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+  .group h2 em { font-style: normal; color: var(--dim); font-size: 12.5px; font-weight: 400; }
+  .items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  .item .text { font-size: 14.5px; line-height: 1.7; }
+  .item .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .chip { background: var(--card2); border: 1px solid var(--line); border-radius: 999px;
+          padding: 2px 9px; font-size: 12px; color: var(--dim); max-width: 100%;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip.cat { color: #fff; border-color: transparent; }
+  .cat-黑话 { background: #7aa2ff; }
+  .cat-梗 { background: #f0994a; }
+  .cat-调情 { background: #e86b9c; }
+  .cat-其他 { background: #8b8175; }
+  .empty { color: var(--dim); font-size: 13.5px; }
+
+  .skins { position: fixed; right: 14px; top: 12px; z-index: 99; display: flex; gap: 6px;
+           background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 6px; }
+  .skins button { border: 1px solid transparent; background: transparent; color: var(--dim);
+                  font-size: 12px; padding: 3px 9px; border-radius: 999px; cursor: pointer; }
+  .skins button.on { color: var(--bg); background: var(--txt); font-weight: 700; }
+
+  html[data-skin="ocean"] {
+    --bg: #0b0f19; --card: #111827; --card2: #0f172a; --line: #1f2b45;
+    --txt: #e8eefc; --dim: #8b9ab5; --acc: #5ee1c1; --acc2: #7aa2ff; --warn: #ffcc66;
+    --paper: #0b0f19; --accent: #5ee1c1; --warnbg: #16233a; --warnbd: #24406a;
+  }
+  html[data-skin="sakura"] {
+    --paper: #fff5f7; --card: #ffffff; --card2: #ffeef2; --line: #ffd9e2;
+    --txt: #3a2430; --dim: #9c7f8b; --accent: #e0567f; --warnbg: #fde9ef; --warnbd: #f2c9d7;
+    --bg: #fff5f7; --acc: #e0567f; --acc2: #b06bff; --warn: #e08b00;
+  }
+  html[data-skin="forest"] {
+    --paper: #0f1a14; --card: #16241b; --card2: #12201a; --line: #24402f;
+    --txt: #e6f2e9; --dim: #8fae99; --accent: #7fdc9a; --warnbg: #1d2f22; --warnbd: #35553d;
+    --bg: #0f1a14; --acc: #7fdc9a; --acc2: #57c7d4; --warn: #ffcc66;
+  }
+
+  @media (max-width: 900px) { .items { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    h1 { font-size: 22px; }
+    .skins { position: static; margin: 0 0 10px; justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="skins" id="skins">
+    <button data-skin="paper">纸感</button>
+    <button data-skin="ocean">深海</button>
+    <button data-skin="sakura">樱花</button>
+    <button data-skin="forest">森林</button>
+  </div>
+
+  <nav class="pnav">
+    <a href="../她看过什么/index.html" data-nav="watch">她看过什么</a>
+    <a href="../她的日记本/index.html" data-nav="journal">她的日记本</a>
+    <a href="../主人画像/index.html" data-nav="profile">主人画像</a>
+    <a href="#" class="on" data-nav="lessons">主人教我的</a>
+  </nav>
+
+  <h1>主人<i>教我的</i></h1>
+  <div class="sub">你在 QQ 里教她的东西都在这里：黑话、梗、调情。可以直接说「记住，这是黑话：xxx」，她会自己归到对应分类。</div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="bar">
+    <input class="search" id="q" placeholder="搜内容 / 分类……" />
+    <div class="tabs" id="tabs">
+      <button data-f="all" class="on">全部</button>
+      <button data-f="黑话">黑话</button>
+      <button data-f="梗">梗</button>
+      <button data-f="调情">调情</button>
+      <button data-f="其他">其他</button>
+    </div>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<script type="module">
+const bridge = window.AstrBotPluginView || window.AstrBotPluginPage;
+let DATA = null;
+let FILTER = "all";
+
+function render() {
+  const box = document.getElementById("list");
+  if (!DATA) return;
+  const q = (document.getElementById("q").value || "").trim().toLowerCase();
+  box.innerHTML = "";
+  let shown = 0;
+  for (const g of (DATA.groups || [])) {
+    if (FILTER !== "all" && g.category !== FILTER) continue;
+    const items = (g.items || []).filter((it) => !q || (it.text || "").toLowerCase().includes(q));
+    if (!items.length) continue;
+    shown += items.length;
+    const wrap = document.createElement("div");
+    wrap.className = "group";
+    wrap.innerHTML = `<h2>${g.category}<em>${items.length} 条</em></h2>`;
+    const list = document.createElement("div");
+    list.className = "items";
+    for (const it of items) {
+      const d = document.createElement("div");
+      d.className = "item";
+      const meta = [];
+      if (it.source) meta.push(`<span class="chip">${it.source === "qq-chat" ? "聊天里教的" : it.source === "qq" ? "命令教的" : "日记里学的"}</span>`);
+      if (it.day) meta.push(`<span class="chip">${it.day}</span>`);
+      if (it.hits > 1) meta.push(`<span class="chip">说过 ${it.hits} 次</span>`);
+      d.innerHTML = `<div class="text"></div><div class="meta">
+        <span class="chip cat cat-${g.category}">${g.category}</span>${meta.join("")}</div>`;
+      d.querySelector(".text").textContent = it.text;
+      list.appendChild(d);
+    }
+    wrap.appendChild(list);
+    box.appendChild(wrap);
+  }
+  if (!shown) {
+    const noFile = DATA.status && DATA.status.lessons_exists === false;
+    box.innerHTML = noFile
+      ? '<div class="empty">还没接过教学库：这个页面要配合「鲸鱼日记」插件用（她写日记时会自动收进去），也可以直接在 QQ 里教她。</div>'
+      : '<div class="empty">还没有。在 QQ 里对她说「记住，这是黑话：……」就行。</div>';
+  }
+}
+
+function kpis(d) {
+  const c = d.counts || {};
+  document.getElementById("kpis").innerHTML = [
+    ["一共教的", (d.total || 0) + " 条"],
+    ["黑话", (c["黑话"] || 0) + " 条"],
+    ["梗", (c["梗"] || 0) + " 条"],
+    ["调情", (c["调情"] || 0) + " 条"],
+  ].map(([k, v]) => `<div class="kpi"><b>${v}</b><span>${k}</span></div>`).join("");
+}
+
+async function load() {
+  try {
+    let d = await bridge.apiGet("lessons", {});
+    if (d && d.data) d = d.data;
+    DATA = d || {};
+    kpis(DATA);
+    render();
+  } catch (e) {
+    document.getElementById("list").innerHTML = '<div class="empty">读取失败：' + e + "</div>";
+  }
+}
+
+document.getElementById("q").addEventListener("input", () => render());
+document.querySelectorAll("#tabs button").forEach((b) => {
+  b.addEventListener("click", () => {
+    FILTER = b.dataset.f;
+    document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
+    render();
+  });
+});
+
+if (bridge) bridge.ready();
+load();
+</script>
+
+<script>
+(function () {
+  var KEY = "dafeiyu-skin";
+  var btns = document.querySelectorAll("#skins button");
+  function apply(name) {
+    document.documentElement.setAttribute("data-skin", name);
+    btns.forEach(function (b) { b.classList.toggle("on", b.dataset.skin === name); });
+    try { localStorage.setItem(KEY, name); } catch (e) {}
+  }
+  var saved = "paper";
+  try { saved = localStorage.getItem(KEY) || "paper"; } catch (e) {}
+  btns.forEach(function (b) { b.addEventListener("click", function () { apply(b.dataset.skin); }); });
+  apply(saved);
+})();
+</script>
+</body>
+</html>
