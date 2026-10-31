@@ -57,6 +57,14 @@
   .tl .tlh { font-size: 12.5px; color: var(--dim); margin-bottom: 5px; }
   .tl .tlh b { color: var(--txt); font-weight: 600; margin-right: 8px; }
   .tl .tlb { color: var(--txt); font-size: 14.5px; line-height: 1.75; }
+  .mon { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 10px; background: var(--card); }
+  .mon > summary { cursor: pointer; padding: 11px 14px; font-size: 13.5px; color: var(--txt);
+                   display: flex; align-items: center; gap: 10px; list-style: none; }
+  .mon > summary::-webkit-details-marker { display: none; }
+  .mon > summary::before { content: "\25B8"; color: var(--acc); font-size: 12px; transition: transform .15s; }
+  .mon[open] > summary::before { transform: rotate(90deg); }
+  .mon > summary .cnt { color: var(--dim); font-size: 12.5px; }
+  .mon .body { padding: 2px 16px 12px; }
   .summary { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
              padding: 16px 18px; margin-bottom: 14px; line-height: 1.85; }
   .summary h3 { margin: 0 0 8px; font-size: 14px; color: var(--dim); font-weight: 600; }
@@ -185,12 +193,27 @@ async function load() {
   const tl = (d.timeline || []).filter((t) => t && (t.summary || "").trim());
   if (tl.length) {
     el("tlwrap").style.display = "";
-    el("timeline").innerHTML = tl.slice().reverse().map((t) => {
-      const rng = t.start && t.end ? (t.start === t.end ? t.start : t.start + " → " + t.end) : (t.end || "—");
-      const extra = [t.mood_label ? "心情 " + t.mood_label : "", t.sleep ? "睡眠 " + t.sleep : ""]
-        .filter(Boolean).join(" · ");
-      return '<div class="tl"><div class="tlh"><b>' + rng + '</b>' + extra + '</div>' +
-             '<div class="tlb">' + (t.summary || "") + '</div></div>';
+    // 按月分组：本月默认展开，更早的月份折起来
+    const _n = new Date();
+    const nowM = _n.getFullYear() + "-" + String(_n.getMonth() + 1).padStart(2, "0");
+    const groups = new Map();
+    tl.forEach((t) => {
+      const m = String(t.end || t.start || "").slice(0, 7) || "未知";
+      if (!groups.has(m)) groups.set(m, []);
+      groups.get(m).push(t);
+    });
+    const months = Array.from(groups.keys()).sort().reverse();
+    el("timeline").innerHTML = months.map((m) => {
+      const rows = groups.get(m).slice().reverse().map((t) => {
+        const rng = t.start && t.end ? (t.start === t.end ? t.start : t.start + " → " + t.end) : (t.end || "—");
+        const extra = [t.mood_label ? "心情 " + t.mood_label : "", t.sleep ? "睡眠 " + t.sleep : ""]
+          .filter(Boolean).join(" · ");
+        return '<div class="tl"><div class="tlh"><b>' + rng + '</b>' + extra + '</div>' +
+               '<div class="tlb">' + (t.summary || "") + '</div></div>';
+      }).join("");
+      const open = (m === nowM || m === months[0]) ? " open" : "";
+      return '<details class="mon"' + open + '><summary>' + m + ' <span class="cnt">' +
+             groups.get(m).length + ' 条</span></summary><div class="body">' + rows + '</div></details>';
     }).join("");
   }
 
