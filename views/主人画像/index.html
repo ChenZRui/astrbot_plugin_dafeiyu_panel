@@ -47,6 +47,16 @@
           text-overflow: ellipsis; white-space: nowrap; }
   .chip.acc { border-color: var(--acc); color: var(--acc); }
   .empty { color: var(--dim); font-size: 13.5px; }
+  .per { font-size: 12.5px; font-weight: 400; color: var(--dim); background: var(--card2);
+         border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; margin-left: 8px;
+         vertical-align: middle; white-space: nowrap; }
+  .tl { border-left: 2px solid var(--line); margin: 0 0 14px 6px; padding: 0 0 0 14px; position: relative; }
+  .tl:last-child { margin-bottom: 0; }
+  .tl::before { content: ""; position: absolute; left: -6px; top: 6px; width: 9px; height: 9px;
+                border-radius: 50%; background: var(--acc); }
+  .tl .tlh { font-size: 12.5px; color: var(--dim); margin-bottom: 5px; }
+  .tl .tlh b { color: var(--txt); font-weight: 600; margin-right: 8px; }
+  .tl .tlb { color: var(--txt); font-size: 14.5px; line-height: 1.75; }
   .summary { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
              padding: 16px 18px; margin-bottom: 14px; line-height: 1.85; }
   .summary h3 { margin: 0 0 8px; font-size: 14px; color: var(--dim); font-weight: 600; }
@@ -120,9 +130,14 @@
   </div>
 
   <div class="summary">
-    <h3>她写下的总结</h3>
+    <h3>她写下的总结 <span class="per" id="period"></span></h3>
     <div id="summary" class="empty">还没有。</div>
     <div class="foot" id="foot"></div>
+  </div>
+
+  <div class="summary" id="tlwrap" style="display:none">
+    <h3>这段时间的总结（按时间）</h3>
+    <div id="timeline"></div>
   </div>
 </div>
 
@@ -159,6 +174,25 @@ async function load() {
     ["算过几天", (d.days_covered || 0) + " 天"],
     ["更新时间", d.updated_at || "—"],
   ].map(([k, v]) => `<div class="kpi"><b>${v}</b><span>${k}</span></div>`).join("");
+
+  // 总结带时间段标签；历史段落在下面按时间排开
+  const per = d.period || {};
+  const perTxt = per.start && per.end
+    ? (per.start === per.end ? per.start : per.start + " → " + per.end)
+    : "";
+  el("period").textContent = perTxt ? "这段时间：" + perTxt : "";
+
+  const tl = (d.timeline || []).filter((t) => t && (t.summary || "").trim());
+  if (tl.length) {
+    el("tlwrap").style.display = "";
+    el("timeline").innerHTML = tl.slice().reverse().map((t) => {
+      const rng = t.start && t.end ? (t.start === t.end ? t.start : t.start + " → " + t.end) : (t.end || "—");
+      const extra = [t.mood_label ? "心情 " + t.mood_label : "", t.sleep ? "睡眠 " + t.sleep : ""]
+        .filter(Boolean).join(" · ");
+      return '<div class="tl"><div class="tlh"><b>' + rng + '</b>' + extra + '</div>' +
+             '<div class="tlb">' + (t.summary || "") + '</div></div>';
+    }).join("");
+  }
 
   el("moodNum").textContent = d.has_data ? (mood.index || 0) : "—";
   el("moodLab").textContent = d.has_data ? (mood.label || "—") : "还没算过";

@@ -383,6 +383,8 @@ class PanelData:
             "catchphrases": _list("catchphrases"),
             "highlights": _list("highlights"),
             "summary": str(data.get("summary") or ""),
+            "period": data.get("period") if isinstance(data.get("period"), dict) else {},
+            "timeline": [t for t in (data.get("timeline") or []) if isinstance(t, dict)][-20:],
             "mood": {
                 "index": max(0, min(10, idx)),
                 "label": str(mood.get("label") or "—"),
