@@ -457,6 +457,8 @@ class PanelData:
                     "category": cat,
                     "note": str(it.get("note") or ""),
                     "context": str(it.get("context") or ""),
+                    "title": str(it.get("title") or ""),
+                    "gist": str(it.get("gist") or ""),
                     "source": str(it.get("source") or ""),
                     "day": str(it.get("day") or ""),
                     "hits": int(it.get("hits") or 1),
