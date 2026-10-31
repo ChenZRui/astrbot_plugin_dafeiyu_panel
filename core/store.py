@@ -56,6 +56,27 @@ def _plugin_data_root(plugin_name: str) -> Path:
         return _data_root() / "plugin_data" / plugin_name
 
 
+def _as_ts(value: Any) -> float:
+    """把各种时间戳写法统一成 epoch 秒。
+
+    日记/教学库里的 ts 可能是 float/int，也可能被写成 ISO 字符串
+    （"2026-10-31T22:30:03" 这种），这里全部兜住，读不出来就当 0。
+    """
+    if isinstance(value, (int, float)):
+        return float(value)
+    txt = str(value or "").strip()
+    if not txt:
+        return 0.0
+    try:
+        return float(txt)
+    except ValueError:
+        pass
+    try:
+        return datetime.fromisoformat(txt.replace("Z", "+00:00")).timestamp()
+    except Exception:
+        return 0.0
+
+
 class PanelData:
     """一个实例负责管理路径、缓存与打分读写。"""
 
@@ -316,7 +337,7 @@ class PanelData:
                     span = d.get("span") or []
                     out.append(
                         {
-                            "ts": int(float(d.get("ts") or 0)),
+                            "ts": int(_as_ts(d.get("ts"))),
                             "day": str(d.get("day") or ""),
                             "hm": str(d.get("hm") or ""),
                             "mood": mood,
@@ -406,7 +427,7 @@ class PanelData:
                     "source": str(it.get("source") or ""),
                     "day": str(it.get("day") or ""),
                     "hits": int(it.get("hits") or 1),
-                    "ts": float(it.get("ts") or 0),
+                    "ts": _as_ts(it.get("ts")),
                 }
             )
             total += 1

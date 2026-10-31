@@ -42,7 +42,7 @@
   .toc a span { color: var(--dim); font-size: 12px; }
 
   .day { margin-bottom: 26px; }
-  .dayh { font-size: 15px; font-weight: 700; margin: 0 0 10px; display: flex; gap: 10px; align-items: baseline; }
+  .dayh { color: var(--txt); font-size: 15px; font-weight: 700; margin: 0 0 10px; display: flex; gap: 10px; align-items: baseline; }
   .dayh span { color: var(--dim); font-weight: 400; font-size: 13px; }
   .entry { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
   .head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
@@ -55,15 +55,15 @@
   .etitle { font-size: 17px; font-weight: 700; margin: 2px 0 10px; }
   .body { white-space: pre-wrap; font-size: 15px; }
   .lessons { background: var(--warnbg); border: 1px solid var(--warnbd); border-radius: 12px; padding: 12px 14px; margin: 14px 0 0; }
-  .lessons h4 { margin: 0 0 6px; font-size: 13px; color: #8a6a1f; }
+  .lessons h4 { margin: 0 0 6px; font-size: 13px; color: var(--warn); }
   .lessons ul { margin: 0; padding-left: 18px; }
   .lessons li { font-size: 14px; }
   .vids { margin-top: 14px; }
   .vids h4 { margin: 0 0 6px; font-size: 13px; color: var(--dim); }
   .vids ul { margin: 0; padding-left: 18px; }
-  .vids li { font-size: 14px; margin: 2px 0; color: #3f3a33; }
+  .vids li { font-size: 14px; margin: 2px 0; color: var(--txt); }
   .meta { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip { background: #f3ece1; color: var(--dim); border-radius: 8px; padding: 2px 9px; font-size: 12px; }
+  .chip { background: var(--card2); color: var(--dim); border-radius: 8px; padding: 2px 9px; font-size: 12px; }
   .empty { color: var(--dim); text-align: center; padding: 40px 0; }
   .hintbox { background: var(--card); border: 1px dashed var(--line); border-radius: 14px; padding: 14px 16px; color: var(--dim); font-size: 13.5px; }
   .hintbox code { color: var(--accent); }
@@ -116,7 +116,7 @@
   html[data-skin="ocean"] {
     --bg: #0b0f19; --card: #111827; --card2: #0f172a; --line: #1f2b45;
     --txt: #e8eefc; --dim: #8b9ab5; --acc: #5ee1c1; --acc2: #7aa2ff; --warn: #ffcc66;
-    --paper: #eef4f9; --accent: #2f7fb0; --warnbg: #eaf4fb; --warnbd: #c6e0f0;
+    --paper: #0b0f19; --accent: #5ee1c1; --warnbg: #1b2436; --warnbd: #2c3a55;
   }
 </style>
 </head>
