@@ -240,7 +240,9 @@ async function load() {
     const data = await apiGet('journal', { q: el('q').value.trim(), limit: 300 });
     render(data);
   } catch (e) {
-    say('加载失败：' + e.message);
+    say(/token|登录|Token/i.test(String(e && e.message || e))
+          ? '面板登录已过期：请重新登录 AstrBot 面板，然后刷新。'
+          : '加载失败：' + e.message);
   }
 }
 el('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(load, 320); });

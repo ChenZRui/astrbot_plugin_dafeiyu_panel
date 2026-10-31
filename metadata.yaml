@@ -2,7 +2,7 @@ name: astrbot_plugin_dafeiyu_panel
 display_name: 大肥鱼面板（打分台 + 日记本 + 主人画像 + 教我的）
 short_desc: 给她刷过的视频打分收藏，翻她写的日记，还能看她总结的「主人画像」和「主人教我的」
 desc: 把「她刷了什么视频」「她写了什么日记」和「她眼里的主人」搬进 AstrBot 面板：按天分组的视频卡带封面，点星星打分、写评价、一键收藏都会存回服务器并同步给刷B站插件调权重；日记本带心情标签、正文、看过的视频和「主人教我的」；另外有主人画像（性格/习惯/口头禅/心情指数/睡眠）与分类教学库（黑话/梗/调情），四个页面都支持深海/纸感/樱花/森林四套皮肤，手机电脑都能开。
-version: 1.1.1
+version: 1.1.2
 author: ChenZRui
 repo: https://github.com/ChenZRui/astrbot_plugin_dafeiyu_panel
 astrbot_version: ">=4.29"

@@ -181,7 +181,9 @@ async function load() {
     kpis(DATA);
     render();
   } catch (e) {
-    document.getElementById("list").innerHTML = '<div class="empty">读取失败：' + e + "</div>";
+    document.getElementById("list").innerHTML = /token|登录|Token/i.test(String(e && e.message || e))
+          ? '<div class="empty">面板登录已过期：请重新登录 AstrBot 面板（右上角退出再登），然后刷新。</div>'
+          : '<div class="empty">读取失败：' + e + '</div>';
   }
 }
 

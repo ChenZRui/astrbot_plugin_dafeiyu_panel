@@ -146,7 +146,9 @@ async function load() {
   try {
     d = await bridge.apiGet("profile");
   } catch (e) {
-    el("summary").textContent = "读取失败：" + e;
+    el("summary").textContent = /token|登录|Token/i.test(String(e && e.message || e))
+          ? "面板登录已过期：请重新登录 AstrBot 面板（右上角退出再登），然后刷新。"
+          : "读取失败：" + e;
     return;
   }
   if (d && d.data) d = d.data;
