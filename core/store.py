@@ -398,34 +398,65 @@ class PanelData:
         }
 
     # ------------------------------------------------------------ 教我的
+    def _lessons_file(self) -> Path:
+        return self.journal_file.parent / "lessons.json"
+
+    def _lessons_data(self) -> dict:
+        data = _read_json(self._lessons_file(), {})
+        if not isinstance(data, dict):
+            data = {}
+        if not isinstance(data.get("items"), list):
+            data["items"] = []
+        if not isinstance(data.get("trash"), list):
+            data["trash"] = []
+        return data
+
+    @staticmethod
+    def _cats(data: dict) -> list[str]:
+        out = ["黑话", "梗", "调情", "其他"]
+        for c in data.get("custom_categories") or []:
+            c = str(c or "").strip()
+            if c and c not in out:
+                out.append(c)
+        return out
+
+    @staticmethod
+    def _coerce_cat(value, cats: list[str]) -> str:
+        txt = str(value or "").strip()
+        if not txt:
+            return "其他"
+        if txt in cats:
+            return txt
+        for c in ("黑话", "梗", "调情", "其他"):
+            if c in txt:
+                return c
+        if 1 <= len(txt) <= 12 and not txt.isdigit():
+            return txt
+        return "其他"
+
     def lessons(self, *, q: str = "", limit: int = 400) -> dict:
-        """读日记插件的教学库（lessons.json），按四类分组。"""
-        path = self.journal_file.parent / "lessons.json"
-        data = _read_json(path, {})
-        items = data.get("items") if isinstance(data, dict) else []
-        if not isinstance(items, list):
-            items = []
+        """读日记插件的教学库（lessons.json）：动态分类 + 完整对话 + 回收站。"""
+        path = self._lessons_file()
+        data = self._lessons_data()
+        items = [it for it in data.get("items") or [] if isinstance(it, dict)]
+        cats = self._cats(data)
         q = (q or "").strip().lower()
-        cats = ("黑话", "梗", "调情", "其他")
         groups: dict[str, list[dict]] = {c: [] for c in cats}
         total = 0
         for it in items:
-            if not isinstance(it, dict):
-                continue
             text = str(it.get("text") or "").strip()
             if not text:
                 continue
-            cat = str(it.get("category") or "其他")
-            if cat not in groups:
-                cat = "其他"
-            if q and q not in text.lower() and q not in cat:
+            cat = self._coerce_cat(it.get("category"), cats)
+            if q and q not in text.lower() and q not in cat and q not in str(it.get("context") or "").lower():
                 continue
-            groups[cat].append(
+            groups.setdefault(cat, []).append(
                 {
                     "id": str(it.get("id") or ""),
                     "text": text[:200],
                     "category": cat,
                     "note": str(it.get("note") or ""),
+                    "context": str(it.get("context") or ""),
                     "source": str(it.get("source") or ""),
                     "day": str(it.get("day") or ""),
                     "hits": int(it.get("hits") or 1),
@@ -433,16 +464,99 @@ class PanelData:
                 }
             )
             total += 1
-        for c in cats:
+        for c in list(groups):
             groups[c].sort(key=lambda x: x["ts"], reverse=True)
             groups[c] = groups[c][: max(1, int(limit or 400))]
+        trash = []
+        now = time.time()
+        for it in data.get("trash") or []:
+            if not isinstance(it, dict):
+                continue
+            try:
+                ts = float(it.get("deleted_at") or 0)
+            except (TypeError, ValueError):
+                ts = 0.0
+            trash.append(
+                {
+                    "id": str(it.get("id") or ""),
+                    "text": str(it.get("text") or "")[:200],
+                    "category": self._coerce_cat(it.get("category"), cats),
+                    "context": str(it.get("context") or ""),
+                    "deleted_ts": str(it.get("deleted_ts") or ""),
+                    "days_left": max(0, int(30 - (now - ts) / 86400)) if ts else 30,
+                }
+            )
         return {
             "total": total,
-            "counts": {c: len(groups[c]) for c in cats},
-            "groups": [{"category": c, "items": groups[c]} for c in cats],
-            "updated_at": str(data.get("updated_at") or "") if isinstance(data, dict) else "",
+            "counts": {c: len(groups.get(c, [])) for c in cats},
+            "categories": cats,
+            "groups": [{"category": c, "items": groups.get(c, [])} for c in cats],
+            "trash": trash,
+            "updated_at": str(data.get("updated_at") or ""),
             "file": str(path),
         }
+
+    # -------------------------------------------------- 教学库写操作
+    def add_lesson_category(self, name: str) -> dict:
+        name = " ".join(str(name or "").split())[:12]
+        if not name:
+            return {"ok": False, "message": "分类名不能空"}
+        data = self._lessons_data()
+        cats = self._cats(data)
+        if name in cats:
+            return {"ok": False, "message": "这个分类已经有了", "categories": cats}
+        extra = [str(c) for c in (data.get("custom_categories") or []) if str(c).strip()]
+        extra.append(name)
+        data["custom_categories"] = extra
+        data["version"] = data.get("version") or 1
+        _write_json(self._lessons_file(), data)
+        return {"ok": True, "message": f"加好了「{name}」", "categories": self._cats(data)}
+
+    def set_lesson_category(self, lid: str, category: str) -> dict:
+        lid = str(lid or "").strip()
+        data = self._lessons_data()
+        cats = self._cats(data)
+        cat = self._coerce_cat(category, cats)
+        for it in data.get("items") or []:
+            if str(it.get("id")) == lid:
+                it["category"] = cat
+                _write_json(self._lessons_file(), data)
+                return {"ok": True, "message": f"归到「{cat}」了", "category": cat}
+        return {"ok": False, "message": "没找到这条"}
+
+    def delete_lesson(self, lid: str) -> dict:
+        lid = str(lid or "").strip()
+        data = self._lessons_data()
+        items = data.get("items") or []
+        for i, it in enumerate(items):
+            if str(it.get("id")) == lid:
+                gone = items.pop(i)
+                gone["deleted_ts"] = time.strftime("%Y-%m-%d %H:%M:%S")
+                gone["deleted_at"] = time.time()
+                trash = data.get("trash") or []
+                trash.insert(0, gone)
+                data["items"] = items
+                data["trash"] = trash[:400]
+                _write_json(self._lessons_file(), data)
+                return {"ok": True, "message": "已移入回收站（30 天内可还原）"}
+        return {"ok": False, "message": "没找到这条"}
+
+    def restore_lesson(self, lid: str) -> dict:
+        lid = str(lid or "").strip()
+        data = self._lessons_data()
+        trash = data.get("trash") or []
+        for i, it in enumerate(trash):
+            if str(it.get("id")) == lid:
+                back = trash.pop(i)
+                back.pop("deleted_ts", None)
+                back.pop("deleted_at", None)
+                items = data.get("items") or []
+                items.append(back)
+                data["items"] = items
+                data["trash"] = trash
+                _write_json(self._lessons_file(), data)
+                return {"ok": True, "message": "还原好了"}
+        return {"ok": False, "message": "回收站里没有这条"}
 
     # ------------------------------------------------------------ 状态
     def status(self) -> dict:

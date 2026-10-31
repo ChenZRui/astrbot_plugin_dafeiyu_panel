@@ -131,6 +131,14 @@ def main() -> None:
         def do_POST(self):
             n = int(self.headers.get("Content-Length") or 0)
             body = json.loads(self.rfile.read(n) or b"{}") if n else {}
+            if self.path.startswith("/__api/lessons/add_category"):
+                return self._json(data.add_lesson_category(body.get("name", "")))
+            if self.path.startswith("/__api/lessons/set_category"):
+                return self._json(data.set_lesson_category(body.get("id", ""), body.get("category", "")))
+            if self.path.startswith("/__api/lessons/delete"):
+                return self._json(data.delete_lesson(body.get("id", "")))
+            if self.path.startswith("/__api/lessons/restore"):
+                return self._json(data.restore_lesson(body.get("id", "")))
             if self.path.startswith("/__api/rate"):
                 return self._json(data.rate(body.get("bvid", ""), int(body.get("stars") or 0), str(body.get("note") or ""), body.get("fav")))
             return self._json({"message": "not found"}, 404)

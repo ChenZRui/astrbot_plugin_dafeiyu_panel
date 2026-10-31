@@ -29,6 +29,10 @@ class DafeiyuPanel(Star):
             (f"/{PLUGIN_NAME}/journal", self.api_journal, ["GET"], "日记列表"),
             (f"/{PLUGIN_NAME}/profile", self.api_profile, ["GET"], "主人画像（性格/习惯/口头禅/心情/睡眠）"),
             (f"/{PLUGIN_NAME}/lessons", self.api_lessons, ["GET"], "主人教我的（黑话/梗/调情）"),
+            (f"/{PLUGIN_NAME}/lessons/add_category", self.api_lessons_add_category, ["POST"], "新增自定义分类"),
+            (f"/{PLUGIN_NAME}/lessons/set_category", self.api_lessons_set_category, ["POST"], "把某条归到别的分类"),
+            (f"/{PLUGIN_NAME}/lessons/delete", self.api_lessons_delete, ["POST"], "删除一条（进回收站）"),
+            (f"/{PLUGIN_NAME}/lessons/restore", self.api_lessons_restore, ["POST"], "从回收站还原"),
             (f"/{PLUGIN_NAME}/status", self.api_status, ["GET"], "数据源状态"),
         ]
         for route, handler, methods, desc in routes:
@@ -156,6 +160,46 @@ class DafeiyuPanel(Star):
         payload = self.data.lessons(q=q, limit=limit or int(self.conf.get("lessons_limit", 400) or 400))
         payload["status"] = self.data.status()
         return json_response(payload)
+
+    async def api_lessons_add_category(self):
+        """POST add_category {name} —— 主人自己加一个分类，立刻生效。"""
+        if not self._enabled():
+            return error_response("面板未启用", status_code=403)
+        if not bool(self.conf.get("allow_edit", True)):
+            return error_response("面板处于只读模式", status_code=403)
+        body = await request.json(default={})
+        out = self.data.add_lesson_category((body or {}).get("name", ""))
+        return json_response(out)
+
+    async def api_lessons_set_category(self):
+        """POST set_category {id, category} —— 把某条内容归到指定分类。"""
+        if not self._enabled():
+            return error_response("面板未启用", status_code=403)
+        if not bool(self.conf.get("allow_edit", True)):
+            return error_response("面板处于只读模式", status_code=403)
+        body = await request.json(default={})
+        out = self.data.set_lesson_category((body or {}).get("id", ""), (body or {}).get("category", ""))
+        return json_response(out)
+
+    async def api_lessons_delete(self):
+        """POST delete {id} —— 删掉一条，进回收站（30 天可还原）。"""
+        if not self._enabled():
+            return error_response("面板未启用", status_code=403)
+        if not bool(self.conf.get("allow_edit", True)):
+            return error_response("面板处于只读模式", status_code=403)
+        body = await request.json(default={})
+        out = self.data.delete_lesson((body or {}).get("id", ""))
+        return json_response(out)
+
+    async def api_lessons_restore(self):
+        """POST restore {id} —— 从回收站还原。"""
+        if not self._enabled():
+            return error_response("面板未启用", status_code=403)
+        if not bool(self.conf.get("allow_edit", True)):
+            return error_response("面板处于只读模式", status_code=403)
+        body = await request.json(default={})
+        out = self.data.restore_lesson((body or {}).get("id", ""))
+        return json_response(out)
 
     async def api_status(self):
         return json_response(
